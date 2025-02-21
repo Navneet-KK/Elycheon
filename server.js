@@ -57,5 +57,5 @@ function broadcastMessage(senderWs, data) {
     });
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Signaling Server running on ws://localhost:${PORT}`));
