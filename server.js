@@ -16,17 +16,26 @@ wss.on('connection', (ws) => {
         try {
             const data = JSON.parse(message.toString());
 
-            // Logging different WebRTC messages
-            if (data.type === "offer") console.log("Received WebRTC offer");
-            if (data.type === "answer") console.log("Received WebRTC answer");
-            if (data.type === "candidate") console.log("Received ICE candidate");
-
-            // Broadcast message to all clients except sender
-            clients.forEach(client => {
-                if (client !== ws && client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify(data));
-                }
-            });
+            // Handle different message types
+            if (data.type === "offer") {
+                console.log("Received WebRTC offer");
+                // Send the offer to all clients except the sender
+                broadcastMessage(ws, data);
+            } else if (data.type === "answer") {
+                console.log("Received WebRTC answer");
+                // Send the answer to all clients except the sender
+                broadcastMessage(ws, data);
+            } else if (data.type === "candidate") {
+                console.log("Received ICE candidate");
+                // Send the ICE candidate to all clients except the sender
+                broadcastMessage(ws, data);
+            } else if (data.type === "chat") {
+                console.log("Received chat message");
+                // Broadcast chat message to all clients
+                broadcastMessage(ws, data);
+            } else {
+                console.log("Unknown message type:", data.type);
+            }
 
         } catch (error) {
             console.error("Invalid JSON received:", error);
@@ -38,6 +47,15 @@ wss.on('connection', (ws) => {
         console.log("Client disconnected. Total:", clients.size);
     });
 });
+
+// Function to broadcast messages to all clients except the sender
+function broadcastMessage(senderWs, data) {
+    clients.forEach(client => {
+        if (client !== senderWs && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Signaling Server running on ws://localhost:${PORT}`));
